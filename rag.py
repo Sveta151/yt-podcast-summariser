@@ -1,0 +1,1 @@
+#use in memory embedding db to store the summary of the video and url
