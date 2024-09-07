@@ -18,22 +18,42 @@ def get_transcript(video_id):
     print(video_id)
     try:
         transcript = YouTubeTranscriptApi.get_transcript(video_id)
-        return " ".join([entry['text'] for entry in transcript])
+        
+        def format_segment(start, end, text):
+            return f"{start:.2f} - {end:.2f}: {text.strip()}"
+        
+        formatted_transcript = []
+        current_chunk = ""
+        chunk_start = 0
+        
+        for entry in transcript:
+            while entry['start'] >= chunk_start + 5:
+                if current_chunk:
+                    formatted_transcript.append(format_segment(chunk_start, chunk_start + 5, current_chunk))
+                    current_chunk = ""
+                chunk_start += 5
+            
+            current_chunk += " " + entry['text']
+        
+        # Add the last chunk if there's any text left
+        if current_chunk:
+            formatted_transcript.append(format_segment(chunk_start, chunk_start + 5, current_chunk))
+        
+        return "\n".join(formatted_transcript)
     except Exception as e:
         print(f"Error fetching transcript: {str(e)}")
         return None
 
-
-def mainflow():
+def process_youtube_video():
     # Get YouTube video URL from user
     url = "https://youtu.be/v4T1oknATGU"
 
 #check if summary present for the video url. If present then print the summary else then do the rest of the flow
-    summary = fetch_summary(url)
-    if summary:
-        print("Summary already exists in the database:")
-        print(summary)
-        return
+    # summary = fetch_summary(url)
+    # if summary:
+        # print("Summary already exists in the database:")
+        # print(summary)
+        # return
     
     # Extract video ID
     video_id = get_video_id(url)
@@ -47,7 +67,7 @@ def mainflow():
             f.write(transcript)
         print("Transcript has been saved to transcript.txt")
 
-    generate_summary(url, transcript)
+    # generate_summary(url, transcript)
 
 def generate_summary(url, transcript):
     if transcript:
@@ -88,12 +108,12 @@ def main():
 
     createdb()
 
-    while True:
-        mainflow()
-        print("Do you want to continue? (y/n)")
-        user_input = input()
-        if user_input.lower() != 'y':
-            break
+    
+    mainflow()
+        # print("Do you want to continue? (y/n)")
+        # user_input = input()
+        # if user_input.lower() != 'y':
+            # break
 
 if __name__ == "__main__":
     main()
