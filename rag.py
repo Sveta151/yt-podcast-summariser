@@ -17,7 +17,12 @@ def split_transcript(transcript):
 # Function to generate embeddings for a chunk
 def generate_embedding(chunk):
     embeddingFunction = OllamaEmbeddingFunction(url="http://localhost:11434/api/embeddings", model_name="nomic-embed-text")
-    return embeddingFunction([chunk])
+    embedding = embeddingFunction([chunk])
+    print(f"Generated embedding for chunk: {chunk}")
+    print(embedding)  # Print embedding to debug
+    if not embedding:
+        raise ValueError(f"No embedding returned for chunk: {chunk}")
+    return embedding
 
 # Function to create the in-memory database and table
 def create_embedddb():
@@ -47,6 +52,11 @@ def process_transcript(url, transcript):
     chunks = split_transcript(transcript)
     for chunk in chunks:
         embedding = generate_embedding(chunk)
+        
+        if embedding is None:
+            print(f"Skipping chunk due to missing embedding: {chunk}")
+            continue  # Skip this chunk if no embedding is returned
+        
         insert_embedding(url, chunk, embedding)
     return conn
 

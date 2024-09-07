@@ -107,8 +107,9 @@ def process_youtube_video():
     transcript = get_transcript(video_id)
     if transcript:
         # Save transcript to file
-        with open('transcript.txt', 'w', encoding='utf-8') as f:
+        with open('transcript_2.txt', 'w', encoding='utf-8') as f:
             f.write(transcript)
+        print(transcript)
         print("Transcript has been saved to transcript.txt")
 
     process_transcript(url, transcript)
